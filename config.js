@@ -7,7 +7,7 @@ export const constants ={
         password:process.env.Password,
         database:process.env.database,
         host:process.env.host,
-        dialect: process.env.dialect,
+        dialect: 'postgres',
         PORT : process.env.PORT,
         portNumber:process.env.portNumber
 
