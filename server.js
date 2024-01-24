@@ -11,8 +11,6 @@ sequelize
     console.log("PostgreSQL connection established");
     await sequelize.sync();
   })
-  // const jane = User.build({ phoneNumber: "985368523",email:"sab@gmail.com" });
-  // await jane.save()})
   .then(() => {
     console.log("Model defined");
   })
@@ -29,47 +27,45 @@ app.get("/", (req, res) => {
   })().then((allUsers) => {
     res.send(allUsers);
   });
-  // res.status(200).json({ message: `Server Started at Port: ${port}` });
 });
 app.listen(port, () => console.log(`Server Started at ${port}`));
-// app.post("/identify", (req, res) => {
-//   const data = req.body;
-//   (async () => {
-//     await sequelize.sync();
-//     const incomingUser = await User.create(data);
-//     const existingUser = User.findOne({where:{phoneNumber:data.phoneNumber}})||User.findOne({where:{email:data.email}})
-//     console.log(existingUser)
-//     .then((existingUser) => {
-//         if (existingUser) {
-//             incomingUser.set({
-//                 linkPrecedence:"secondary",
-//                 linkedId:existingUser.id
-//             })
-//             incomingUser.save();
-//         } else {
-//             console.log("newUser Created Succesfully");
-//         }
-//       })
-//   })();
-//   res.status(200).json({ message: "Data received successfully" });
-// });
-
 app.post("/identify", (req, res) => {
   const data = req.body;
   sequelize.sync()
   .then(() => {
     console.log('User model synced with the PostgreSQL database.');
-    // Find one user
-    return User.findOne( {where:{[Op.or]: [
+    return (User.findOne( {where:{[Op.or]: [
       {email:data.email},
       {phoneNumber:data.phoneNumber},
     ]}
-  });
+  }));
+  
 })
   .then((foundUser) => {
-    console.log(foundUser);
+    
     if (foundUser) {
-      console.log('User found:', foundUser.toJSON());
+      function creation(){
+        return User.create(data);
+      }
+      creation()
+      .then((result)=>{console.log(result)
+        sequelize.query('UPDATE "Users" SET "linkedId" = ?, "linkPrecedence" = ? WHERE "email" = ? AND "phoneNumber" = ?',{
+          type:sequelize.QueryTypes.UPDATE,
+          replacements:[foundUser.id,"secondary",data.email,data.phoneNumber]
+         })
+       .then(result => console.log('Updated query result:', result))
+       .catch(error => {
+        console.error('Error executing UPDATE query:', error);
+      });})
+
+      // .then((User)=>{
+      //   User.set({
+      //     linkedId:foundUser.id,
+      //     linkPrecedence:"secondary"
+      //   })
+      // })
+      console.log('User found:', foundUser);
+
     } else {
       console.log('No user found.');
     }
