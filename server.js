@@ -30,6 +30,7 @@ app.get("/", (req, res) => {
 });
 app.listen(port, () => console.log(`Server Started at ${port}`));
 app.post("/identify", (req, res) => {
+  let primaryID=0,emails=[],phoneNumbers=[],secondaryContactIDs=[];
   const data = req.body;
   sequelize.sync()
   .then(() => {
@@ -53,7 +54,11 @@ app.post("/identify", (req, res) => {
           type:sequelize.QueryTypes.UPDATE,
           replacements:[foundUser.id,"secondary",data.email,data.phoneNumber]
          })
-       .then(result => console.log('Updated query result:', result))
+       .then(result => {
+        res.send("done");
+        console.log('Updated query result:', result);
+       }
+        )
        .catch(error => {
         console.error('Error executing UPDATE query:', error);
       });})
@@ -65,14 +70,28 @@ app.post("/identify", (req, res) => {
       //   })
       // })
       console.log('User found:', foundUser);
-
+      primaryID=foundUser.id;
     } else {
-      User.create(data)
-      console.log('No user found.');
+      function creation(){
+        return User.create(data);
+      }
+      creation()
+      .then((check)=>{
+        emails.push(check.email);
+        phoneNumbers.push(check.phoneNumber);
+        secondaryContactIDs.push(check.linkedId);
+        res.send({contact:{
+          "primaryContactId":check.id,
+          "emails":emails,
+          "phoneNumbers":phoneNumbers,
+          "secondaryContactIds":secondaryContactIDs
+        }});
+      });
+     
     }
   })
   .catch((err) => {
     console.error('Error syncing User model:', err);
   });
-  res.send("done");
+  
 });
