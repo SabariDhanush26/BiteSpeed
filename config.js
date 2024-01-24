@@ -8,8 +8,7 @@ export const constants ={
         database:process.env.database,
         host:process.env.host,
         dialect: 'postgres',
-        portNumber:process.env.portNumber
-
+        port:process.env.portNumber
     },
     production:{
         PORT : process.env.PORT

@@ -3,7 +3,11 @@ import express from "express";
 import { Sequelize, Op  } from "sequelize";
 import defineUserModel from "./Models/User.js";
 import { constants } from "./config.js";
-const sequelize = new Sequelize(constants.development);
+const sequelize = new Sequelize(constants.development.database,'postgres',constants.development.password,{
+  host:constants.development.host,
+  port:5432,
+  dialect:'postgres'
+});
 const User = defineUserModel(sequelize);
 sequelize
   .authenticate()
