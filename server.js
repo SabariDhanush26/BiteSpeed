@@ -18,7 +18,7 @@ sequelize
     console.error("Following error occured: ", err);
   });
 const app = express();
-const port = constants.development.PORT || 3000;
+const port = constants.production.PORT || 3000;
 app.use(bodyParser.json());
 app.get("/", (req, res) => {
   (async () => {
