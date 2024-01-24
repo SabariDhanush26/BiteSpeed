@@ -67,6 +67,7 @@ app.post("/identify", (req, res) => {
       console.log('User found:', foundUser);
 
     } else {
+      User.create(data)
       console.log('No user found.');
     }
   })
