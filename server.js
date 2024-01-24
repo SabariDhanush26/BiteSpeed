@@ -55,22 +55,38 @@ app.post("/identify", (req, res) => {
           replacements:[foundUser.id,"secondary",data.email,data.phoneNumber]
          })
        .then(result => {
-        res.send("done");
-        console.log('Updated query result:', result);
+        // res.send("done");
+        // console.log('Updated query result:', result);
        }
         )
        .catch(error => {
         console.error('Error executing UPDATE query:', error);
       });})
-
-      // .then((User)=>{
-      //   User.set({
-      //     linkedId:foundUser.id,
-      //     linkPrecedence:"secondary"
-      //   })
-      // })
       console.log('User found:', foundUser);
-      primaryID=foundUser.id;
+      function allValues() {
+        return User.findAndCountAll({where:{[Op.or]: [
+        {email:data.email},
+        {phoneNumber:data.phoneNumber},
+      ]}
+    });}
+    allValues()
+    .then(({count,rows})=>{
+      primaryID=rows[0].dataValues.id;
+      for(let i=1;i<count;i++){
+        emails.push(rows[i].dataValues.email);
+        phoneNumbers.push(rows[i].dataValues.phoneNumber);
+        secondaryContactIDs.push(rows[i].dataValues.id);
+      }
+      // console.log(count,rows[0].dataValues);
+      res.send({
+        contact:{
+          "primaryContactId":primaryID,
+          "emails":emails,
+          "phoneNumbers":phoneNumbers,
+          "secondaryContactIds":secondaryContactIDs
+        }
+      })
+    })
     } else {
       function creation(){
         return User.create(data);
